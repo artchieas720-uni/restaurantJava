@@ -2,12 +2,14 @@ package models;
 
 import models.enums.EmployeeStatus;
 import models.enums.EmployeeRole;
+import models.helpers.ExpHelper;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 public class Employee {
     private String name;
-    private Date birthdayDate;
+    private LocalDate birthdayDate;
 
     private double salary;
     private double skillsRate;
@@ -16,13 +18,14 @@ public class Employee {
 
     private double fatigue;
     private int level;
+    private double exp;
 
     private String placeOfWorking;
 
     private boolean isSick;
 
 
-    public Employee(String name, Date birthdayDate, double salary, int level, EmployeeRole role) {
+    public Employee(String name, LocalDate birthdayDate, double salary, int level, EmployeeRole role) {
         this.name = name;
         this.birthdayDate = birthdayDate;
         this.salary = salary;
@@ -33,7 +36,25 @@ public class Employee {
         this.placeOfWorking = "null";
         this.fatigue = 0;
         this.isSick = false;
+        this.exp = 0;
     }
+
+    // LEVEL SYSTEM
+
+    private int xpToLevelUp = ExpHelper.getXpForLevel(this.getLevel(), 300, 2, 7);
+
+    public void employeeLevelUp(){
+        if(this.getExp() >= getXpToLevelUp()){
+            this.setExp(0);
+            this.setLevel(this.getLevel()+1);
+        }
+    }
+
+    public void gainExp(double exp){
+        this.exp += exp;
+    }
+
+    // GETTER AND SETTER
 
     public String getName() {
         return name;
@@ -43,11 +64,11 @@ public class Employee {
         this.name = name;
     }
 
-    public Date getBirthdayDate() {
+    public LocalDate getBirthdayDate() {
         return birthdayDate;
     }
 
-    public void setBirthdayDate(Date birthdayDate) {
+    public void setBirthdayDate(LocalDate birthdayDate) {
         this.birthdayDate = birthdayDate;
     }
 
@@ -113,6 +134,22 @@ public class Employee {
 
     public void setSick(boolean sick) {
         isSick = sick;
+    }
+
+    public double getExp() {
+        return exp;
+    }
+
+    public void setExp(double exp) {
+        this.exp = exp;
+    }
+
+    public int getXpToLevelUp() {
+        return xpToLevelUp;
+    }
+
+    public void setXpToLevelUp(int xpToLevelUp) {
+        this.xpToLevelUp = xpToLevelUp;
     }
 
     @Override

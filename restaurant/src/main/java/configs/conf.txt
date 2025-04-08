@@ -1,0 +1,6 @@
+moneyOnStart=10000.0
+sicknessChance=0.1
+maxEmployees=10
+maxLevel=50
+windowSetup=1024x524
+Difficulty=0

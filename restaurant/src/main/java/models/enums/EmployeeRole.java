@@ -4,5 +4,6 @@ public enum EmployeeRole {
     CHIEF,
     MASTERCHIEF,
     WAITER,
-    MANAGER
+    MANAGER,
+    RESOURCE_PROVIDER
 }
