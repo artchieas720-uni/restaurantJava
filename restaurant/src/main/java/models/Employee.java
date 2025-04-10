@@ -7,6 +7,7 @@ import models.helpers.ExpHelper;
 import java.time.LocalDate;
 import java.util.Date;
 
+// May i add some stress modifier
 public class Employee {
     private String name;
     private LocalDate birthdayDate;

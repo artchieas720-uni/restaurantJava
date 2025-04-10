@@ -1,7 +1,7 @@
 package models.enums;
 
 public enum EmployeeRole {
-    CHIEF,
+    CHEF,
     MASTERCHIEF,
     WAITER,
     MANAGER,

@@ -1,0 +1,9 @@
+------ Financial Rapport ------
+
+Transaction{date=2020-01-01T08:00, description='Sprzedaż dla klienta Jan', amount=33.93, type=INCOME}
+
+------ Summarise ------
+Income: 33,93 zł
+Expenses:  0,00 zł
+Profit: 33,93 zł
+------------------------------

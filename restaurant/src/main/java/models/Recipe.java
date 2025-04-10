@@ -18,7 +18,7 @@ public class Recipe {
         this.name = name;
         this.IngredientsToPrepare = IngredientsToPrepare;
         this.preparationTimeInMinutes = preparationTimeInMinutes;
-        this.sellingPrice = setSellingPrice(magazine, 1.1);
+        this.sellingPrice = setSellingPrice(magazine, 1);
         this.costToMake = costToPrepare(magazine);
         this.requiredLevelToPrepare = requiredLevelToPrepare;
     }
@@ -34,7 +34,6 @@ public class Recipe {
         }
         return true;
     }
-
 
     public double costToPrepare(Magazine magazine) {
         double cost = 0;
@@ -58,6 +57,57 @@ public class Recipe {
     public double setSellingPrice(Magazine magazine, double marginMultiplier) {
         double baseCost = costToPrepare(magazine);
         return baseCost * marginMultiplier;
+    }
+
+    //GETTER AND SETTER
+
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public Map<IngredientType, Integer> getIngredientsToPrepare() {
+        return IngredientsToPrepare;
+    }
+
+    public void setIngredientsToPrepare(Map<IngredientType, Integer> ingredientsToPrepare) {
+        IngredientsToPrepare = ingredientsToPrepare;
+    }
+
+    public int getPreparationTimeInMinutes() {
+        return preparationTimeInMinutes;
+    }
+
+    public void setPreparationTimeInMinutes(int preparationTimeInMinutes) {
+        this.preparationTimeInMinutes = preparationTimeInMinutes;
+    }
+
+    public double getCostToMake() {
+        return costToMake;
+    }
+
+    public void setCostToMake(double costToMake) {
+        this.costToMake = costToMake;
+    }
+
+    public double getSellingPrice() {
+        return sellingPrice;
+    }
+
+    public void setSellingPrice(double sellingPrice) {
+        this.sellingPrice = sellingPrice;
+    }
+
+    public int getRequiredLevelToPrepare() {
+        return requiredLevelToPrepare;
+    }
+
+    public void setRequiredLevelToPrepare(int requiredLevelToPrepare) {
+        this.requiredLevelToPrepare = requiredLevelToPrepare;
     }
 
     @Override

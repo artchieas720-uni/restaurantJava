@@ -56,9 +56,15 @@ public class Ingredient {
         return this.price;
     }
 
+    public void setCount(int count) {
+        this.count = count;
+    }
+
     public int getCount() {
         return count;
     }
+
+
 
     @Override
     public String toString() {

@@ -9,7 +9,6 @@ public class Customer {
     private String surename;
     private CustomerPreference dishPreference;
     private double budget;
-    private int levelOfSatisfaction;
     private final CustomerBehavior behavior;
 
     public Customer(String name, String surename, CustomerPreference dishPreference, double budget, CustomerBehavior behavior) {
@@ -17,16 +16,45 @@ public class Customer {
         this.surename = surename;
         this.dishPreference = dishPreference;
         this.budget = budget;
-        this.levelOfSatisfaction = 50;
         this.behavior = behavior;
     }
 
     public double payTheBill(double amountToPay) {
-        return behavior.pay(amountToPay);
+        double finalAmount = behavior.pay(amountToPay);
+
+        if (this.budget >= finalAmount) {
+            this.budget -= finalAmount;
+            return finalAmount;
+        } else {
+            System.out.println("Klient " + name + " nie ma wystarczających środków na pokrycie rachunku.");
+            double paid = this.budget;
+            this.budget = 0;
+            return paid;
+        }
     }
 
     public String makeASpeech() {
         return behavior.reaction();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getSurename() {
+        return surename;
+    }
+
+    public CustomerPreference getDishPreference() {
+        return dishPreference;
+    }
+
+    public double getBudget() {
+        return budget;
+    }
+
+    public CustomerBehavior getBehavior() {
+        return behavior;
     }
 
 }
