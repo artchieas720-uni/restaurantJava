@@ -23,11 +23,29 @@ public class GeneratorForEmployee {
             "Liliana", "Alan", "Laura", "Franciszek", "Michalina", "Kacper", "Nadia", "Leon"
     };
 
+    private static final String[] SURNAMES = {
+
+            "Kowalski", "Nowak", "Wiśniewski", "Wójcik", "Kowalczyk", "Kamiński",
+            "Lewandowski", "Zieliński", "Szymański", "Woźniak", "Dąbrowski", "Kozłowski",
+            "Jankowski", "Mazur", "Krawczyk", "Piotrowski", "Grabowski", "Zając",
+            "Pawłowski", "Michalski", "Król", "Wieczorek", "Jabłoński", "Wróbel",
+            "Nowicki", "Majewski", "Olszewski", "Stępień", "Jaworski", "Malinowski",
+            "Adamczyk", "Dudek", "Zawadzki", "Rutkowski", "Sikora", "Baran",
+            "Szewczyk", "Ostrowski", "Tomaszewski", "Pawlak", "Walczak", "Chmielewski",
+            "Włodarczyk", "Borkowski", "Czarnecki", "Sawicki", "Sokołowski",
+            "Urbański", "Kubiak", "Maciejewski"
+
+    };
+
     // KINDA RANDOM SECTION
 
     public EmployeeRole getRandomRole(){
         EmployeeRole[] role = EmployeeRole.values();
         return role[random.nextInt(role.length)];
+    }
+
+    public String getRandomSurname(){
+        return SURNAMES[random.nextInt(SURNAMES.length)];
     }
 
     public String getRandomName(){
@@ -52,6 +70,10 @@ public class GeneratorForEmployee {
 
     public Employee generateOneEmployee(){
         return new Employee(getRandomName(), getRandomDate(), getRandomSalary(), getRandomStartingLevel(), getRandomRole());
+    }
+
+    public Employee generateOneEmployee(EmployeeRole employeeRole){
+        return new Employee(getRandomName(), getRandomDate(), getRandomSalary(), getRandomStartingLevel(), employeeRole);
     }
 
     // INGREDIENT RANDOMS

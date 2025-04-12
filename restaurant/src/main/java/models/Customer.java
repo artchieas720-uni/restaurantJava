@@ -1,17 +1,17 @@
 package models;
 
 import interfaces.CustomerBehavior;
-import models.enums.CustomerPreference;
+import models.enums.DishType;
 
 public class Customer {
 
     private String name;
     private String surename;
-    private CustomerPreference dishPreference;
+    private DishType dishPreference;
     private double budget;
     private final CustomerBehavior behavior;
 
-    public Customer(String name, String surename, CustomerPreference dishPreference, double budget, CustomerBehavior behavior) {
+    public Customer(String name, String surename, DishType dishPreference, double budget, CustomerBehavior behavior) {
         this.name = name;
         this.surename = surename;
         this.dishPreference = dishPreference;
@@ -45,7 +45,7 @@ public class Customer {
         return surename;
     }
 
-    public CustomerPreference getDishPreference() {
+    public DishType getDishPreference() {
         return dishPreference;
     }
 

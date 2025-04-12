@@ -11,6 +11,7 @@ import utils.TimeManager;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,83 +26,66 @@ public class RestaurantAPP {
         GameConfigReader config = new GameConfigReader("src/main/java/configs/conf.txt");
         RestaurantManage restaurantManage = new RestaurantManage("Pomidorek");
 
-        GeneratorForEmployee generatorForEmployee = new GeneratorForEmployee();
+        GeneratorForEmployee generator = new GeneratorForEmployee();
 //        SwingUtilities.invokeLater(() -> {
 //            new loginFrame().setVisible(true);
 //        });
 
-
-        TimeManager timeManager = TimeManager.startNewGame();
-
-
-        Ingredient marchewka = new Ingredient(IngredientType.VEGETABLE, 1.2, 2);
-        Ingredient marchewka2 = new Ingredient(IngredientType.VEGETABLE, 1.9, 1);
-        Ingredient mieso = new Ingredient(IngredientType.MEAT, 23, 1);
+        restaurantManage.getMagazine().getEquipmentHelper().addEquipment(EquipmentType.TABLE, 2);
+        restaurantManage.getMagazine().getEquipmentHelper().addEquipment(EquipmentType.FREEZER, 6);
+        restaurantManage.getMagazine().getEquipmentHelper().addEquipment(EquipmentType.KITCHEN, 1);
+        System.out.println(restaurantManage.getMagazine().getEquipmentHelper().restaurantCanOperate());
 
 
-
-        restaurantManage.getMagazine().addResource(marchewka);
-        restaurantManage.getMagazine().addResource(marchewka2);
-        restaurantManage.getMagazine().addResource(mieso);
-
-
-        Employee e1 = generatorForEmployee.generateOneEmployee();
-        restaurantManage.hireEmployee(e1);
-        System.out.println(restaurantManage.getEmployees());
-        restaurantManage.fireEmployee(e1);
-        System.out.println(restaurantManage.getEmployees());
+        for (int i = 0; i < 2; i++) {
+            Employee chef = generator.generateOneEmployee(EmployeeRole.CHEF);
+            restaurantManage.hireEmployee(chef);
+        }
 
 
-        CustomerBehavior behavior = GeneratorForCustomer.getRandomBehavior();
-        Customer customer = new Customer("Jan", "Nowak", CustomerPreference.MEAT, 90.0, behavior);
+        for (int i = 0; i < 2; i++) {
+            Employee waiter = generator.generateOneEmployee(EmployeeRole.WAITER);
+            restaurantManage.hireEmployee(waiter);
+        }
 
-        Map<IngredientType, Integer> beefSteakIngredients = new HashMap<>();
-        beefSteakIngredients.put(IngredientType.MEAT, 1);
-        beefSteakIngredients.put(IngredientType.VEGETABLE, 2);
-
-        Recipe beefSteak = new Recipe("Beef Steak", beefSteakIngredients, 20, 1, restaurantManage.getMagazine());
-        beefSteak.costToPrepare(restaurantManage.getMagazine());
-        System.out.println(beefSteak.costToPrepare(restaurantManage.getMagazine()));
-        System.out.println(beefSteak);
-
-        System.out.println(beefSteak.isPossibleToPrepare(restaurantManage.getMagazine()));
-        System.out.println(restaurantManage.getMagazine().getResources());
-
-        FinancialHelper fh = new FinancialHelper();
-
-// Raport dzienny
-        fh.printSummaryReport(fh.getTransactionsForDay(timeManager.getCurrentTime().toLocalDate()));
-
-        List<Recipe> singleOrder = List.of(beefSteak);
-
-        restaurantManage.processCustomerOrder(customer,singleOrder,fh,timeManager, OrderType.ON_PLACE);
-        customer.getBehavior().consume();
-        System.out.println(customer.getBehavior().reaction());
-
-        System.out.println(restaurantManage.getMoney());
-
-        fh.printSummaryReport(fh.getTransactions());
-        System.out.println(fh.getTransactions());
-
-        //FinancialRapportsExporter.exportReportToTxt("transactions " + timeManager.getCurrentTime().toLocalDate(), fh.getTransactions() );
-//        System.out.println(restaurantManage.getMagazine().getResources());
+        restaurantManage.getEmployeeHelper().getYourBestSquadOnBoard();
 
 
-        restaurantManage.getMagazine().addResource(marchewka);
-        restaurantManage.getMagazine().addResource(marchewka2);
-        restaurantManage.getMagazine().addResource(mieso);
-//        System.out.println(restaurantManage.getRestaurantEquipmentHelper().getMaxStorageCapacity());
-//        System.out.println(restaurantManage.getMagazine().getCurrentStorageSize());
-//        System.out.println(restaurantManage.getMagazine().getMaxStorageCapacity());
-        restaurantManage.getMagazine().getEquipmentHelper().addEquipment(EquipmentType.FREEZER, 2);
-        System.out.println(restaurantManage.getMagazine().getCurrentStorageSize());
-        System.out.println(restaurantManage.getMagazine().getMaxStorageCapacity());
+        List<Recipe> recipes = new ArrayList<>();
+        Magazine magazine = restaurantManage.getMagazine();
 
-        restaurantManage.getMagazine().addResource(marchewka);
-        restaurantManage.getMagazine().addResource(marchewka2);
-        restaurantManage.getMagazine().addResource(mieso);
-        System.out.println(restaurantManage.getMagazine().getEquipmentHelper().getMaxStorageCapacity());
-        System.out.println(restaurantManage.getMagazine().getCurrentStorageSize());
-        System.out.println(restaurantManage.getMagazine().getMaxStorageCapacity());
+        Map<IngredientType, Integer> pastaIngredients = new HashMap<>();
+        pastaIngredients.put(IngredientType.TOMATO, 2);
+        pastaIngredients.put(IngredientType.PASTA, 1);
+        recipes.add(new Recipe("Spaghetti Pomidoro", pastaIngredients, 15, 1, magazine, DishType.MAIN_COURSE));
+
+        Map<IngredientType, Integer> saladIngredients = new HashMap<>();
+        saladIngredients.put(IngredientType.LETTUCE, 1);
+        saladIngredients.put(IngredientType.TOMATO, 1);
+        recipes.add(new Recipe("Sałatka Wiosenna", saladIngredients, 10, 1, magazine, DishType.STARTER));
+
+
+        Menu menu = new Menu(recipes);
+        restaurantManage.setMenu(menu);
+
+
+        magazine.addResource(IngredientType.TOMATO, 2.0, 100, restaurantManage);
+        magazine.addResource(IngredientType.PASTA, 1.5, 100, restaurantManage);
+        magazine.addResource(IngredientType.LETTUCE, 1.0, 100, restaurantManage);
+
+
+        for (int i = 0; i < 10; i++) {
+            System.out.println("\n===== Godziny " + (i + 1) + " w restauracji '" + restaurantManage.getRestaurantName() + "' =====");
+            restaurantManage.advanceTime(1);
+            System.out.println("💰 Stan konta: " + restaurantManage.getMoney() + " zł");
+            // System.out.println(restaurantManage.getReputation().getReputationScore());
+            // System.out.println(restaurantManage.getEmployeeHelper().getTodaysStaff());
+            //restaurantManage.getFinancialHelper().printSummaryReport(restaurantManage.getFinancialHelper().getTransactions());
+        }
+
+        System.out.println("\n Symulacja ended");
     }
+
 }
+
+

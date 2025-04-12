@@ -40,4 +40,9 @@ public class RestaurantEquipmentHelper {
     public boolean restaurantCanOperate() {
         return hasBasicKitchenEquipment();
     }
+
+    public int getTableCount(){
+        return getEquipmentCount(EquipmentType.TABLE);
+    }
+
 }

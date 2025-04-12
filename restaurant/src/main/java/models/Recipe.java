@@ -1,5 +1,6 @@
 package models;
 
+import models.enums.DishType;
 import models.enums.IngredientType;
 
 import java.util.List;
@@ -12,15 +13,17 @@ public class Recipe {
     private double costToMake;
     private double sellingPrice;
     private int requiredLevelToPrepare;
+    private DishType dishType;
 
 
-    public Recipe(String name, Map<IngredientType, Integer> IngredientsToPrepare, int preparationTimeInMinutes, int requiredLevelToPrepare, Magazine magazine) {
+    public Recipe(String name, Map<IngredientType, Integer> IngredientsToPrepare, int preparationTimeInMinutes, int requiredLevelToPrepare, Magazine magazine, DishType dishType) {
         this.name = name;
         this.IngredientsToPrepare = IngredientsToPrepare;
         this.preparationTimeInMinutes = preparationTimeInMinutes;
         this.sellingPrice = setSellingPrice(magazine, 1);
         this.costToMake = costToPrepare(magazine);
         this.requiredLevelToPrepare = requiredLevelToPrepare;
+        this.dishType = dishType;
     }
 
     public boolean isPossibleToPrepare(Magazine magazine){
@@ -108,6 +111,10 @@ public class Recipe {
 
     public void setRequiredLevelToPrepare(int requiredLevelToPrepare) {
         this.requiredLevelToPrepare = requiredLevelToPrepare;
+    }
+
+    public DishType getDishType() {
+        return dishType;
     }
 
     @Override

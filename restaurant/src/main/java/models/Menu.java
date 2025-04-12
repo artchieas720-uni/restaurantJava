@@ -1,5 +1,6 @@
 package models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Menu {
@@ -8,6 +9,10 @@ public class Menu {
 
     public Menu(List<Recipe> recipes) {
         this.recipes = recipes;
+    }
+
+    public Menu() {
+        this.recipes = new ArrayList<>();
     }
 
     public void addRecipeToMenu(Recipe recipe) {
@@ -30,4 +35,6 @@ public class Menu {
         }
         return null;
     }
+
+
 }

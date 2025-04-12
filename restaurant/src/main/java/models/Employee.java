@@ -5,6 +5,7 @@ import models.enums.EmployeeRole;
 import models.helpers.ExpHelper;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 // May i add some stress modifier
@@ -24,6 +25,8 @@ public class Employee {
     private String placeOfWorking;
 
     private boolean isSick;
+    private LocalDateTime busyUntil;
+
 
 
     public Employee(String name, LocalDate birthdayDate, double salary, int level, EmployeeRole role) {
@@ -53,6 +56,22 @@ public class Employee {
 
     public void gainExp(double exp){
         this.exp += exp;
+    }
+
+    public boolean isBusy(LocalDateTime now) {
+        return busyUntil != null && now.isBefore(busyUntil);
+    }
+
+    public void assignToWork(int preparationTimeInMinutes, LocalDateTime currentTime) {
+        this.busyUntil = currentTime.plusMinutes(preparationTimeInMinutes);
+    }
+
+    public LocalDateTime getBusyUntil() {
+        return busyUntil;
+    }
+
+    public void setBusyUntil(LocalDateTime busyUntil) {
+        this.busyUntil = busyUntil;
     }
 
     // GETTER AND SETTER
@@ -167,4 +186,6 @@ public class Employee {
                 ", placeOfWorking='" + placeOfWorking + '\'' +
                 '}';
     }
+
+
 }

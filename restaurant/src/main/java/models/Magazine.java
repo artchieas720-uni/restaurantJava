@@ -2,6 +2,7 @@ package models;
 
 import models.enums.EquipmentType;
 import models.enums.IngredientType;
+import models.enums.TransactionType;
 import models.generators.GeneratorForEmployee;
 import models.helpers.RestaurantEquipmentHelper;
 import utils.TimeManager;
@@ -91,6 +92,20 @@ public class Magazine {
     public void addResource(IngredientType type, double price , int count) {
         Ingredient ingredient = new Ingredient(type, price, count);
         addResource(ingredient);
+
+    }
+
+    public void addResource(IngredientType type, double price , int count, RestaurantManage restaurantManage) {
+        Ingredient ingredient = new Ingredient(type, price, count);
+        addResource(ingredient);
+        restaurantManage.getFinancialHelper().addTransaction(
+                restaurantManage.getTimeManager().getCurrentTime(),
+                "Zakup składników: " + type + " x" + count,
+                count,
+                TransactionType.EXPENSES,
+                null,
+                null
+        );
     }
 
     public void sortIngredientsByExpiration() {

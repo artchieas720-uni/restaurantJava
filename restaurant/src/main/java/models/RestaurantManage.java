@@ -1,11 +1,12 @@
 package models;
 
 import fileutils.GameConfigReader;
+import interfaces.CustomerBehavior;
 import models.enums.*;
-import models.helpers.FinancialHelper;
-import models.helpers.NotificationHelper;
-import models.helpers.RestaurantEmployeeHelper;
-import models.helpers.RestaurantEquipmentHelper;
+import models.generators.GeneratorForCustomer;
+import models.generators.GeneratorForEmployee;
+import models.helpers.*;
+import utils.MathExtension;
 import utils.TimeManager;
 
 import java.util.*;
@@ -16,14 +17,18 @@ public class RestaurantManage{
     private final String restaurantName;
     private Magazine magazine;
     private double money;
-    private double marginMultiplier = 1.3;
+    private double marginMultiplier = 1.5;
     private int level;
     private RestaurantEmployeeHelper restaurantEmployeeHelper;
     private GameConfigReader gameConfigReader = new GameConfigReader("src/main/java/configs/conf.txt");;
     private FinancialHelper financialHelper = new FinancialHelper();
+    private GeneratorForEmployee generatorForEmployee = new GeneratorForEmployee();
     private RestaurantEquipmentHelper restaurantEquipmentHelper = new RestaurantEquipmentHelper();
     private NotificationHelper notificationHelper = new NotificationHelper();
     private Reputation reputation = new Reputation();
+    private TimeManager timeManager = TimeManager.startNewGame();
+    private Menu menu;
+
 
 
 
@@ -36,7 +41,7 @@ public class RestaurantManage{
         this.magazine = new Magazine();
         this.level = 1;
         this.restaurantEmployeeHelper = new RestaurantEmployeeHelper(this.employees, this.level);
-
+        this.menu = new Menu();
     }
 
     public void setMarginMultiplier(double multiplier) {
@@ -87,8 +92,8 @@ public class RestaurantManage{
             return false;
         }
 
-        if (!restaurantEquipmentHelper.restaurantCanOperate()) {
-            System.out.println("❌ Restauracja nie może działać – brak podstawowego wyposażenia kuchni.");
+        if (orderedRecipes.isEmpty()) {
+            System.out.println("❌ Klient " + customer.getName() + " nie złożył żadnego zamówienia.");
             return false;
         }
 
@@ -102,29 +107,59 @@ public class RestaurantManage{
             }
         }
 
-        Map<IngredientType, Long> available = new HashMap<>();
+        Map<IngredientType, Integer> available = new HashMap<>();
         for (Ingredient ingredient : magazine.getResources()) {
-            available.merge(ingredient.getType(), 1L, Long::sum);
+            available.merge(ingredient.getType(), ingredient.getCount(), Integer::sum);
         }
 
+
         for (Map.Entry<IngredientType, Integer> entry : totalNeeded.entrySet()) {
-            long availableCount = available.getOrDefault(entry.getKey(), 0L);
+            int availableCount = available.getOrDefault(entry.getKey(), 0);
             if (availableCount < entry.getValue()) {
                 System.out.println("Brakuje składników: " + entry.getKey());
                 return false;
             }
         }
 
+
         for (Recipe recipe : orderedRecipes) {
-            processRecipe(recipe);
+            Optional<Employee> availableChef = this.employees.stream()
+                    .filter(e -> e.getRole() == EmployeeRole.CHEF && !e.isBusy(timeManager.getCurrentTime()))
+                    .findFirst();
+
+            if (availableChef.isPresent()) {
+                Employee chef = availableChef.get();
+                chef.assignToWork(recipe.getPreparationTimeInMinutes(), timeManager.getCurrentTime());
+
+                double fatigueGain = recipe.getPreparationTimeInMinutes() * 0.05;
+                chef.setFatigue(chef.getFatigue() + fatigueGain);
+
+                // testy
+                System.out.println("👨‍🍳 Kucharz " + chef.getName() + " przygotowuje danie " + recipe.getName() + " (czas: " + recipe.getPreparationTimeInMinutes() + " min)");
+
+
+
+                processRecipe(recipe);
+            } else {
+                System.out.println("❌ Brak dostępnych kucharzy do przygotowania: " + recipe.getName());
+                return false;
+            }
         }
 
         double paidAmount = customer.getBehavior().pay(totalAmount);
         paidAmount = Math.min(paidAmount, customer.getBudget());
         paidAmount = customer.payTheBill(paidAmount);
 
+        paidAmount = MathExtension.roundingDecimals(paidAmount);
+        totalAmount = MathExtension.roundingDecimals(totalAmount);
+
+        // testy
+        System.out.println("🧾 Rachunek: " + paidAmount + " / " + totalAmount + " zł");
+
         Random random = new Random();
-        for (Employee employee : employees) {
+        List<Employee> todaysStaff = this.restaurantEmployeeHelper.getTodaysStaff();
+
+        for (Employee employee : todaysStaff) {
             double fatigueGain = 1.0 + random.nextDouble() * 2.0;
             employee.setFatigue(employee.getFatigue() + fatigueGain);
         }
@@ -135,6 +170,8 @@ public class RestaurantManage{
         } else {
             System.out.println("✅ Klient " + customer.getName() + " zapłacił pełną kwotę: " + totalAmount + " zł.");
         }
+
+
 
         financialHelper.addTransaction(
                 timeManager.getCurrentTime(),
@@ -150,6 +187,9 @@ public class RestaurantManage{
         return true;
     }
 
+    public void setMenu(Menu menu) {
+        this.menu = menu;
+    }
 
     private boolean processRecipe(Recipe recipe) {
 
@@ -163,7 +203,6 @@ public class RestaurantManage{
         for (Map.Entry<IngredientType, Integer> entry : neededIngredients.entrySet()) {
             int availableCount = available.getOrDefault(entry.getKey(), 0);
             if (availableCount < entry.getValue()) {
-                System.out.println("Brakuje składników do przygotowania dania: " + recipe.getName() + " - " + entry.getKey());
                 return false;
             }
         }
@@ -216,21 +255,86 @@ public class RestaurantManage{
         double avgChefsFatigue = chefs.stream().mapToDouble(Employee::getFatigue).average().orElse(0);
         double avgWaiterFatigue = waiters.stream().mapToDouble(Employee::getFatigue).average().orElse(0);
 
-        double fatiguePenalty = (avgChefsFatigue * 0.6 + avgWaiterFatigue * 0.4) * 0.5;
 
+        double fatiguePenalty = ((avgChefsFatigue * 0.6 + avgWaiterFatigue * 0.4) / 100.0) * 30.0;
 
-        double satisfactionChance = (avgChefsSkill * 0.6 + avgWaiterSkill * 0.4) - fatiguePenalty;
+        double satisfactionChance = (avgChefsSkill * 10 * 0.6 + avgWaiterSkill * 10 * 0.4) - fatiguePenalty;
+
         satisfactionChance = Math.max(0, Math.min(satisfactionChance, 100));
 
         double percents = Math.random() * 100;
-
         return percents < satisfactionChance ? CustomerReaction.HAPPY : CustomerReaction.UNHAPPY;
+    }
+
+
+    public void advanceTime(int hours) {
+
+        for (Employee employee : employees) {
+            if (employee.getRole() == EmployeeRole.CHEF && employee.getBusyUntil() != null && timeManager.getCurrentTime().isAfter(employee.getBusyUntil())) {
+                employee.setBusyUntil(null);
+            }
+        }
+
+        for (int i = 0; i < hours; i++) {
+            timeManager.addHours(1);
+            int hour = timeManager.getCurrentTime().getHour();
+
+            if (hour >= 8 && hour < 22) {
+                List<Customer> newCustomers = generateCustomersForThisHour();
+                for (Customer customer : newCustomers) {
+                    List<Recipe> recipes = CustomerOrderHelper.chooseRecipesForCustomer(customer, menu);
+                    processCustomerOrder(customer, recipes, financialHelper, timeManager, OrderType.ON_PLACE);
+                }
+            }
+
+            if (hour >= 22) {
+                System.out.println("🔚 Dzień zakończony! Godzina: " + timeManager.getFormattedTime());
+                timeManager.addDays(1);
+                timeManager = new TimeManager(timeManager.getCurrentTime().withHour(8).withMinute(0));
+                break;
+            }
+        }
+
+        magazine.removeExpiredIngredients(timeManager.getCurrentTime());
+
+        System.out.println("⏱️ Aktualny czas gry: " + timeManager.getFormattedTime());
+
+    }
+
+
+
+    private List<Customer> generateCustomersForThisHour() {
+        List<Customer> customers = new ArrayList<>();
+        int hour = timeManager.getCurrentTime().getHour();
+
+        int baseCustomerCount;
+        if ((hour >= 12 && hour <= 14) || (hour >= 19 && hour <= 22)) {
+            baseCustomerCount = 4 + new Random().nextInt(2);
+        } else {
+            baseCustomerCount = 1 + new Random().nextInt(2);
+        }
+
+        int reputationBonus = reputation.getReputationScore() / 100;
+        int totalCustomers = baseCustomerCount + reputationBonus;
+        totalCustomers = Math.min(totalCustomers, 6);
+
+
+        for (int i = 0; i < totalCustomers; i++) {
+            DishType preference = DishType.values()[new Random().nextInt(DishType.values().length)];
+            double budget = new Random().nextDouble(20.0, 150.0);
+            CustomerBehavior behavior = GeneratorForCustomer.getRandomBehavior();
+
+            Customer customer = new Customer(generatorForEmployee.getRandomName(), generatorForEmployee.getRandomSurname(), preference, budget, behavior);
+            customers.add(customer);
+        }
+
+        return customers;
     }
 
 
 
     public double getMoney() {
-        return money;
+        return MathExtension.roundingDecimals(money);
     }
 
     public void setMoney(double money) {
@@ -253,5 +357,15 @@ public class RestaurantManage{
         return level;
     }
 
+    public Reputation getReputation() {
+        return reputation;
+    }
 
+    public FinancialHelper getFinancialHelper() {
+        return financialHelper;
+    }
+
+    public TimeManager getTimeManager() {
+        return timeManager;
+    }
 }

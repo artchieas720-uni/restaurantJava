@@ -6,7 +6,7 @@ public class QuirkCustomer implements CustomerBehavior {
 
     @Override
     public double pay(double amountToPay) {
-        return amountToPay * 0.5;
+        return amountToPay * 0.9;
     }
 
     @Override

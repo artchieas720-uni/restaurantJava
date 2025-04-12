@@ -1,9 +1,7 @@
 package models.generators;
 
 import interfaces.CustomerBehavior;
-import models.customerBehaviour.NormalCustomer;
-import models.customerBehaviour.QuirkCustomer;
-import models.customerBehaviour.RudeCustomer;
+import models.customerBehaviour.*;
 
 import java.util.Random;
 
@@ -13,10 +11,14 @@ public class GeneratorForCustomer {
 
     public static CustomerBehavior getRandomBehavior() {
         int randomPercent = random.nextInt(100);
-        if (randomPercent < 70) return new NormalCustomer();
-        else if (randomPercent < 98) return new QuirkCustomer();
+        if (randomPercent < 75) return new NormalCustomer();
+        else if (randomPercent < 78) return new QuirkCustomer();
+        else if (randomPercent < 85) return new VipCustomer();
+        else if (randomPercent < 97) return new InfluenceCustomer();
         else return new RudeCustomer();
     }
+
+
 
 
 }
